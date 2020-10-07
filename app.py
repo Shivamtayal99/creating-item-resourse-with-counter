@@ -1,22 +1,37 @@
-from flask import Flask
+from flask import Flask,request
 from flask_restful import Resource, Api
 from collections import defaultdict
+import mysql.connector
 
 app = Flask(__name__)
 api = Api(app)
 items = defaultdict(int)
 
 
-
-
-
-@app.route('/api/pixel/<string:name>')
+@app.route('/api/pixel/<string:name>',methods=['POST','GET'])
 def increment_counter(name):
     items[name] += 1
-    return "Ok"
+
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="register"
+    )
+    mycursor = mydb.cursor()
+    if request.method == 'GET':
+
+        mycursor.execute("insert into api(apiname)values(%s)",(name,))
+        mydb.commit()
+        mycursor.close()
+        return "Ok"
+
+
+
 @app.route('/api/count/<string:name>')
 def get_counter(name):
     return str(items[name])
+
 
 
 
