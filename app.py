@@ -21,7 +21,8 @@ def increment_counter(name):
     mycursor = mydb.cursor()
     if request.method == 'GET':
 
-        mycursor.execute("insert into api(apiname)values(%s)",(name,))
+        mycursor.execute("insert into api(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",(name,))
+
         mydb.commit()
         mycursor.close()
         return "Ok"
