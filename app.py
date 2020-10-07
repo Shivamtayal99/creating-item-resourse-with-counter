@@ -7,23 +7,20 @@ api = Api(app)
 items = defaultdict(int)
 
 
-class Api(Resource):
-    def get(self, name):
-        return items['name']
-
-    def post(self, name):
-        items['name']+=1
-        return "homepage +1"
-
-
-class Apicount(Resource):
-    def get(self,name):
-        return {'homepage':items['name']}
 
 
 
-api.add_resource(Api, '/api/pixel/<string:name>')
-api.add_resource(Apicount, '/api/count/<string:name>')
+@app.route('/api/pixel/<string:name>')
+def increment_counter(name):
+    items[name] += 1
+    return "Ok"
+@app.route('/api/count/<string:name>')
+def get_counter(name):
+    return str(items[name])
+
+
+
+
 
 app.run(port=5000, debug=True)
 
