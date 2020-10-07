@@ -31,11 +31,19 @@ def increment_counter(name):
 
 @app.route('/api/count/<string:name>')
 def get_counter(name):
-    return str(items[name])
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="register"
+    )
 
+    mycursor = mydb.cursor()
 
+    mycursor.execute("SELECT count FROM api where apiname = %s",(name,))
 
-
+    myresult = mycursor.fetchone()
+    return str(myresult[0])
 
 
 app.run(port=5000, debug=True)
