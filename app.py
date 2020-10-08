@@ -1,10 +1,8 @@
 from flask import Flask,request
-from flask_restful import Resource, Api
 from collections import defaultdict
 import mysql.connector
 
 app = Flask(__name__)
-api = Api(app)
 items = defaultdict(int)
 
 mydb = mysql.connector.connect(
@@ -20,7 +18,6 @@ def increment_counter(name):
     mycursor = mydb.cursor()
     if request.method == 'GET':
         mycursor.execute("insert into api(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",(name,))
-
         mydb.commit()
         mycursor.close()
         return "Ok"
@@ -29,12 +26,10 @@ def increment_counter(name):
 def get_counter(name):
     mycursor = mydb.cursor()
     mycursor.execute("SELECT count FROM api where apiname = %s",(name,))
-
     myresult = mycursor.fetchone()
     if myresult==None:
         return str(0)
     return str(myresult[0])
-
 
 app.run(port=5000, debug=True)
 
