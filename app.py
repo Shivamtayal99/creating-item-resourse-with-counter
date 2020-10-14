@@ -7,19 +7,15 @@ from mysql.connector import pooling
 
 app = Flask(__name__)
 
-def db_conn():
-    try:
-        connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="pool",
-                                                                      pool_size=1,
-                                                                      autocommit=True,
-                                                                      pool_reset_session=False,
-                                                                      host='localhost',
-                                                                      database='register',
-                                                                      user='root',
-                                                                      password='')
-    except Error as e:
-        print("Error while connecting to MySQL using Connection pool ", e)
-    return connection_pool
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="pool",
+                                                              pool_size=20,
+                                                              autocommit=True,
+                                                              pool_reset_session=False,
+                                                              host='localhost',
+                                                              database='register',
+                                                              user='root',
+                                                              password='')
+
 
 
 
@@ -27,7 +23,7 @@ def db_conn():
 @app.route('/api/pixel/<string:name>')
 def increment_counter(name):
 
-    connection_object = db_conn().get_connection()
+    connection_object = connection_pool.get_connection()
     if connection_object.is_connected():
         print("Connection ID:", connection_object.connection_id)
         cursor = connection_object.cursor()
@@ -47,7 +43,7 @@ def increment_counter(name):
 @app.route('/api/count/<string:name>')
 def get_counter(name):
 
-    connection_object = db_conn().get_connection()
+    connection_object = connection_pool.get_connection()
     if connection_object.is_connected():
         cursor = connection_object.cursor()
         cursor.execute("SELECT count FROM app where apiname = %s", (name,))
