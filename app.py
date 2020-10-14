@@ -27,7 +27,7 @@ def increment_counter(name):
     if connection_object.is_connected():
         print("Connection ID:", connection_object.connection_id)
         cursor = connection_object.cursor()
-        cursor.execute("insert into api(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",
+        cursor.execute("insert into app(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",
                          (name,))
         cursor.close()
         connection_object.close()
