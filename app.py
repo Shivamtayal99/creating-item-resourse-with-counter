@@ -19,13 +19,18 @@ def increment_counter(name):
                                                                        password='')
         connection_object = connection_pool.get_connection()
         if connection_object.is_connected():
+            print("Connection ID:", connection_object.connection_id)
+            cursor = connection_object.cursor()
+            cursor.execute("insert into app(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",
+                           (name,))
+            cursor.close()
+            connection_object.close()
+            print("MySQL connection is closed")
 
 
-           cursor = connection_object.cursor()
-           cursor.execute("insert into app(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",(name,))
-           cursor.close()
-           connection_object.close()
-           print("MySQL connection is closed")
+
+
+
 
     except Error as e:
         print("Error while connecting to MySQL using Connection pool ", e)
@@ -51,19 +56,20 @@ def get_counter(name):
                                                                        password='')
         connection_object = connection_pool.get_connection()
         if connection_object.is_connected():
+            cursor = connection_object.cursor()
+            cursor.execute("SELECT count FROM app where apiname = %s", (name,))
+            myresult = cursor.fetchone()
+            cursor.close()
+            connection_object.close()
+
+            if myresult == None:
+                return str(0)
+
+            return str(myresult[0])
 
 
-           cursor = connection_object.cursor()
-           cursor.execute("SELECT count FROM app where apiname = %s", (name,))
-           myresult = cursor.fetchone()
-           cursor.close()
-           connection_object.close()
-
-           if myresult == None:
-               return str(0)
 
 
-           return str(myresult[0])
     except Error as e:
         print("Error while connecting to MySQL using Connection pool ", e)
 
