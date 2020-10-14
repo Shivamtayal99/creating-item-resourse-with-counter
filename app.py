@@ -21,12 +21,17 @@ def increment_counter(name):
         if connection_object.is_connected():
             print("Connection ID:", connection_object.connection_id)
             cursor = connection_object.cursor()
-            cursor.execute("insert into app(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",
-                           (name,))
+            cursor.execute("SELECT count FROM app where apiname = %s", (name,))
+            myresult = cursor.fetchall()
+            if myresult == None:
+                cursor.execute("insert into app(`apiname`,`count`)values(%s,%d)", (name,1))
+            else:
+                cursor.execute("UPDATE app SET count = count + 1 WHERE apiname = %s", (name,))
             cursor.close()
             connection_object.close()
             print("MySQL connection is closed")
 
+        return "okdb"
 
 
 
@@ -40,8 +45,6 @@ def increment_counter(name):
 
 
 
-
-    return "okdb"
 
 
 @app.route('/api/count/<string:name>')
@@ -66,9 +69,6 @@ def get_counter(name):
                 return str(0)
 
             return str(myresult[0])
-
-
-
 
     except Error as e:
         print("Error while connecting to MySQL using Connection pool ", e)
