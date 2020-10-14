@@ -1,4 +1,3 @@
-
 from flask import Flask
 import mysql.connector
 from mysql.connector import Error
@@ -12,6 +11,7 @@ def increment_counter(name):
     try:
         connection_pool  = mysql.connector.pooling.MySQLConnectionPool(pool_name="pynative_pool",
                                                                        pool_size=1,
+                                                                       autocommit=True,
                                                                        pool_reset_session=False,
                                                                        host='localhost',
                                                                        database='register',
@@ -22,9 +22,9 @@ def increment_counter(name):
             print("Connection ID:", connection_object.connection_id)
             cursor = connection_object.cursor()
             cursor.execute("SELECT count FROM app where apiname = %s", (name,))
-            myresult = cursor.fetchall()
+            myresult = cursor.fetchone()
             if myresult == None:
-                cursor.execute("insert into app(`apiname`,`count`)values(%s,%d)", (name,1))
+                cursor.execute("insert into app(`apiname`,`count`)values(%s,1)", (name,))
             else:
                 cursor.execute("UPDATE app SET count = count + 1 WHERE apiname = %s", (name,))
             cursor.close()
@@ -74,4 +74,3 @@ def get_counter(name):
         print("Error while connecting to MySQL using Connection pool ", e)
 
 app.run(port=5000, debug=True)
-
