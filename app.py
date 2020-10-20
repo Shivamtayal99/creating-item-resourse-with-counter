@@ -1,11 +1,8 @@
 import mysql.connector
 from flask import Flask
-from flask import Flask
 from kafka import KafkaProducer
-from kafka import KafkaConsumer
 import json
 from mysql.connector import pooling
-
 
 
 app = Flask(__name__)
@@ -24,31 +21,9 @@ connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="pool",
                                                               database='register',
                                                               user='root',
                                                               password='')
-consumer = KafkaConsumer(
-    "register_api",
-    bootstrap_servers=['192.168.56.1:9092'],
-    auto_offset_reset='earliest',
-    group_id="consumer-group-a")
-
-@app.route('/api/countKafka/<string:name>')
-def read_data(name):
-    connection_object = connection_pool.get_connection()
-    if connection_object.is_connected():
-
-        print("consumer start")
-        for msg in consumer:
-            p = json.loads(msg.value.decode('utf-8'))
-            page=p['page']
-            print('update count for',page)
-            cursor = connection_object.cursor()
-            cursor.execute("insert into app(`apiname`,`count`)values(%s,1) on duplicate key update `count` = `count`+1",
-                           (page,))
-        cursor.close()
-        connection_object.close()
 
 
 
-        return "ok"
 
 
 @app.route('/api/pixelKafka/<string:name>')
