@@ -3,6 +3,20 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from kafka import KafkaConsumer
+import mysql.connector
+from mysql.connector import pooling
+
+
+
+
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="pool",
+                                                              pool_size=12,
+                                                              autocommit=True,
+                                                              pool_reset_session=False,
+                                                              host='localhost',
+                                                              database='register',
+                                                              user='root',
+                                                              password='')
 
 # Set Kafka config
 kafka_broker_hostname='192.168.56.1'
@@ -31,5 +45,17 @@ df_kafka_string_parsed=df_kafka_string.select(from_json(df_kafka_string.value,df
 df_kafka_string_formatted=df_kafka_string_parsed.select(
         col("df_data.page").alias("page"),
         col("df_data.count").alias("count"))
+connection_object = connection_pool.get_connection()
+
+if connection_object.is_connected():
+    print("consumer start")
+
+    cursor = connection_object.cursor()
+    cursor.close()
+    connection_object.close()
+
 
 df_kafka_string_formatted.printSchema()
+df2.printSchema()
+q=df_kafka_string_formatted.writeStream.format("console").start()
+q.awaitTermination()
