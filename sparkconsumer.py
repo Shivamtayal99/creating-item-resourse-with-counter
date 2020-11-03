@@ -8,7 +8,6 @@ from mysql.connector import pooling
 
 
 
-
 connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="pool",
                                                               pool_size=12,
                                                               autocommit=True,
@@ -46,16 +45,17 @@ df_kafka_string_formatted=df_kafka_string_parsed.select(
         col("df_data.page").alias("page"),
         col("df_data.count").alias("count"))
 connection_object = connection_pool.get_connection()
-
+df_agg=df_kafka_string_formatted.groupBy(df_kafka_string_formatted.page).count()
 if connection_object.is_connected():
     print("consumer start")
 
     cursor = connection_object.cursor()
+
     cursor.close()
     connection_object.close()
 
 
 df_kafka_string_formatted.printSchema()
-df2.printSchema()
-q=df_kafka_string_formatted.writeStream.format("console").start()
+df_agg.printSchema()
+q=df_agg.writeStream.outputMode("update").format("console").start()
 q.awaitTermination()
