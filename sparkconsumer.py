@@ -4,36 +4,30 @@ from pyspark.sql.types import *
 import mysql.connector
 from mysql.connector import pooling
 
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="pool",
-                                                              pool_size=12,
-                                                              autocommit=True,
-                                                              pool_reset_session=False,
-                                                              host='localhost',
-                                                              database='register',
-                                                              user='root',
-                                                              password='')
+
 def upsertToDelta(row,epoch_id):
-
-
     rows=row.select('page','count').collect()
-
     print(rows)
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="register"
+    )
+
+    cursor = mydb.cursor()
     for i in rows:
         print(i[0])
         print(i[1])
         page1=i[0]
         count1=int(i[1])
-        connection_object = connection_pool.get_connection()
-        if connection_object.is_connected():
-            print("consumer start")
+        print("consumer start")
+        cursor.execute("CREATE TABLE IF NOT EXISTS customers (page VARCHAR(10) PRIMARY KEY, count INT)")
+        cursor.execute("insert into customers(`page`,`count`)values(%s,%s) on duplicate key update `count` = `count`+%s",
+                       (page1,count1,count1))
+        mydb.commit()
+        cursor.close()
 
-            cursor = connection_object.cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS customers (page VARCHAR(10) PRIMARY KEY, count INT)")
-            cursor.execute("insert into customers(`page`,`count`)values(%s,%s) on duplicate key update `count` = `count`+%s",
-                           (page1,count1,count1))
-
-            cursor.close()
-            connection_object.close()
 
 
 
